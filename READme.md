@@ -1,6 +1,6 @@
 # Real-Time Polling Application
 
-This is a backend service for real-time polling application built with **Node.js, Express, PostgresSQL, Prisma, and WebSockets**. This application allows users to create polls, vote on poll options, and receive **live results in real-time**. 
+This is a backend service for real-time polling application built with **Node.js, Express, PostgreSQL, Prisma, and WebSockets**. This application allows users to create polls, vote on poll options, and receive **live results in real-time**. 
 
 ## Features 
 - **User Management**: Create and retrive users.
