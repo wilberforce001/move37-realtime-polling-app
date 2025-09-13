@@ -1,9 +1,10 @@
-const express = require('express');
-const router = express.Router();
-const controller = require('../controllers/pollController');
+import { Router } from 'express';
+const router = Router();
+import { createPoll, getPoll, castVote, listPolls} from '../controllers/pollController.js';
 
-router.post('/', controller.createPoll); 
-router.get('/:id', controller.getPoll);
-router.post('/:id/vote', controller.castVote);
+router.post('/', createPoll); // create poll + options
+router.get('/', listPolls); // list all polls
+router.get('/:id', getPoll); // get poll with options + counts
+router.post('/:id/vote', castVote); // submit (or change) vote
 
-module.exports = router;
+export default router;

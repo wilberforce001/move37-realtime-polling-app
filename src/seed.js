@@ -1,9 +1,9 @@
-const { text } = require('express');
-const prisma = require('./prismaClient');
-const { connect, options } = require('./routes/polls');
+import { text } from 'express';
+import { user, poll as _poll, $disconnect } from './prismaClient';
+import { connect, options } from './routes/polls';
 async function main() {
-    const alice = await prisma.user.create({ data: { name: 'Alice', email: 'alice@example.com', passwordHash: 'seed' } });
-    const poll = await prisma.poll.create({
+    const alice = await user.create({ data: { name: 'Alice', email: 'alice@example.com', passwordHash: 'seed' } });
+    const poll = await _poll.create({
         data: {
             question: 'What is your favorite color?',
             creator: { connect: { id: alice.id }},
@@ -13,4 +13,4 @@ async function main() {
     console.log('seed done');
 }
 
-main().catch(e => console.error(e)).finally(() => prisma.$disconnect());
+main().catch(e => console.error(e)).finally(() => $disconnect());
