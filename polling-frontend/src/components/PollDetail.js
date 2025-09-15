@@ -1,59 +1,64 @@
-import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import api from "../api";
-import { io } from "socket.io-client";
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom"; // useParams grabs route params (id from /poll/:id).
+import axios from "axios"; // axios is used to make HTTP requests to the backend API
+import { io } from "socket.io-client"; // socket.io-client for real-time WebSocket communication
+
+const API_URL = "http://localhost:4000/api";
+const socket = io("http://localhost:4000"); // A webSocket connection is opened to the backened server
 
 function PollDetail() {
-    const { id } = useParams();
-    const [poll, setPoll] = useState(null);
-    const [socket, setSocket] = useState(null);
+    const { id } = useParams(); // id - the poll's unique ID from the URL
+    const [poll, setPoll] = useState(null); // poll - stores poll details (questions + options)
 
     useEffect(() => {
-        async function fetchPoll() {
-            const res = await api.get(`/polls/${id}`);
-            setPoll(res.data);
-        }
-        fetchPoll();
+        // fetch poll details
+        axios.get(`${API_URL}/polls/${id}`)
+        .then(res => setPoll(res.data))
+        .catch(err => console.error(err));
 
-        // Connect socket
-        const s = io("http://localhost:4000");
-        s.emit("joinPoll", Number(id));
+        // join websocket room
+        socket.emit("joinPoll", parseInt(id));
 
-        s.on("pollUpdated", (data) => {
-            if (data.pollId === Number(id)) {
-                setPoll((prev) => ({
+        socket.on("pollUpdated", (data) => {
+            if (data.pollId === parseInt(id)) {
+                setPoll(prev => ({
                     ...prev,
-                    options: data.options,
+                    options: prev.options.map(opt => 
+                        opt.id === data.optionId ? { ...opt, votes: data.votes} : opt 
+                    )
                 }));
             }
         });
 
-        setSocket(s);
+        // cleanup on unmount
         return () => {
-            s.emit("leavePoll", Number(id));
-            s.disconnect();
+            socket.off("pollUpdated");
         };
     }, [id]);
 
     const handleVote = async (optionId) => {
-        await api.post(`/polls/${id}/vote`, {
-            userId: 1,
-            optionId,
-        });
+        try {
+            await axios.post(`${API_URL}/polls/${id}/vote`, {
+                userId: 1,
+                optionId
+            });
+        } catch (err) {
+            console.error(err);
+        }
     };
 
-    if (!poll) return <p>Loading...</p>;
+    if (!poll) return <div>Loading poll...</div>;
 
     return (
         <div>
             <h2>{poll.question}</h2>
             <ul>
-                {poll.options.map((opt) => {
+                {poll.options.map(opt => (
                     <li key={opt.id}>
-                        {opt.text} - {opt.votes} votes
-                        <button onClick={() => handleVote(opt.id)}>handleVote</button>
+                        {opt.text} - {opt.votes || 0} votes
+                        <button onClick={() => handleVote(opt.id)}>Vote</button>
                     </li>
-                })}
+                ))}
             </ul>
         </div>
     );

@@ -1,4 +1,4 @@
-import { hash } from 'bcrypt';
+import bcrypt from 'bcrypt';
 import prisma from '../prismaClient.js';
 
 
@@ -8,17 +8,14 @@ export async function registerUser(req, res) {
         const { name, email, password} = req.body;
 
         // hash the password
-        const passwordHash = await hash(password, 10);
+        const passwordHash = await bcrypt.hash(password, 10);
 
         // save user in db
-        const user = await _user.create({
+        const user = await prisma.user.create({
             data: { name, email, passwordHash },
         });
 
-        res.status(201).json({
-            message: "User created",
-            user: { id: user.id, name: user.name, email: user.email }
-        });
+        res.status(201).json(user);
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: "Something went wrong" });
@@ -35,5 +32,16 @@ export async function getUser(req, res) {
         res.json(user);
     } catch (err) {
         res.status(500).json({ message: err.message });
+    }
+}
+
+export async function listUsers(req, res) {
+    try {
+        const users = await prisma.user.findMany({
+            select: { id: true, name: true, email: true }
+        });
+        res.json(users);
+    } catch (err) {
+        res.status(500).json({ message: err.message});
     }
 }

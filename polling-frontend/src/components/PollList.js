@@ -3,6 +3,7 @@ import { Link } from "react-router-dom"; // Link from react-router-dom, used for
 import axios from "axios"; // axios is used to make HTTP requests to the backend API
 
 const API_URL = "http://localhost:4000/api"; // API base URL for the backend. All requests will be made relative to this
+                                              // (REST API requests go to /api/...)
 
 function PollsList() {
     const [polls, setPolls] = useState([]); // useState enables the storage of state inside

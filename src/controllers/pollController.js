@@ -1,3 +1,4 @@
+import { text } from 'express';
 import prisma from '../prismaClient.js';
 
 export async function createPoll(req, res) {
@@ -10,9 +11,31 @@ export async function createPoll(req, res) {
         creator: { connect: { id: creatorId } },
         options: { create: options.map(text => ({ text })) },
       },
-      include: { options: true },
+      include: {
+        options: {
+          include: {
+            _count: { select: { votes: true }}
+          }
+        },
+        creator: { select: { id: true, name: true, email: true }}
+      }
     });
-    return res.status(201).json(poll);
+
+    // shape options with vote counts
+    const pollWithCounts = {
+      id: poll.id,
+      question: poll.question,
+      isPublished: poll.isPublished,
+      createdAt: poll.createdAt,
+      updatedAt: poll.updatedAt,
+      creator: poll.creator,
+      options: poll.options.map(o => ({
+        id: o.id,
+        text: o.text,
+        votes: o._count.votes
+      }))
+    };
+    return res.status(201).json(pollWithCounts);
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: err.message });
@@ -52,11 +75,34 @@ export async function getPoll(req, res) {
 export async function listPolls(req, res) {
   try {
     const polls = await prisma.poll.findMany({
-      include: { options: true }
+      include: {
+        options: {
+          include: {
+            _count: { select: { votes: true} }
+          }
+        },
+        creator: { select: { id: true, name: true, email: true } }
+      }
     });
-    res.json(polls);
+
+    const pollWithCounts = polls.map(poll => ({
+      id: poll.id, 
+      question: poll.question,
+      isPublished: poll.isPublished,
+      createdAt: poll.createdAt, 
+      updatedAt: poll.updatedAt,
+      creator: poll.creator,
+      options: poll.options.map(o => ({
+        id: o.id,
+        text: o.text,
+        votes: o._count.votes
+      }))
+    }));
+
+    res.json(pollWithCounts);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error(err);
+    return res.status(500).json({ message: error.message });
   }
 };
 
