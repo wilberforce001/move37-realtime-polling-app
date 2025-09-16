@@ -5,7 +5,7 @@ import { Server } from 'socket.io';
 import dotenv from 'dotenv'
 import pollRoutes from './routes/polls.js'
 import userRoutes from './routes/users.js';
-dotenv.config();
+dotenv.config(); 
 
 const app = express();
 app.use(cors());

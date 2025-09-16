@@ -1,14 +1,22 @@
 import { text } from 'express';
 import prisma from '../prismaClient.js';
+import jwt from "jsonwebtoken";
 
 export async function createPoll(req, res) {
   try {
-    const { question, options, creatorId, isPublished } = req.body;
+
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) return res.status(401).json({ message: "No token provided"});
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.id;
+
+    const { question, options, isPublished } = req.body;
     const poll = await prisma.poll.create({
       data: {
         question,
         isPublished: !!isPublished,
-        creator: { connect: { id: creatorId } },
+        creator: { connect: { id: userId } },
         options: { create: options.map(text => ({ text })) },
       },
       include: {
