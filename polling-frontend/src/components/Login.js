@@ -2,39 +2,40 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
+const API_URL = "http://localhost:4000/api";
+
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState(null);
-
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
+    setError("");
 
     try {
-      const res = await axios.post("http://localhost:4000/api/users/login", {
-        email,
-        password,
-      });
+      const res = await axios.post(`${API_URL}/users/login`, { email, password });
+      const { token, user } = res.data;
 
-      // Save token to localStorage
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
+      // ✅ Save token + user info to localStorage
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
 
-      // Redirect to dashboard (polls page)
+      // Redirect to polls page
       navigate("/polls");
     } catch (err) {
-      setError("Invalid email or password");
+      setError("Login failed. Please check your credentials.");
+      console.error(err);
     }
   };
 
   return (
-    <div className="login-container">
+    <div>
       <h2>Login</h2>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleLogin}>
         <div>
-          <label>Email:</label>
+          <label>Email</label>
           <input
             type="email"
             value={email}
@@ -42,9 +43,8 @@ function Login() {
             required
           />
         </div>
-
         <div>
-          <label>Password:</label>
+          <label>Password</label>
           <input
             type="password"
             value={password}
@@ -52,10 +52,8 @@ function Login() {
             required
           />
         </div>
-
-        <button type="submit">Login</button>
-
         {error && <p style={{ color: "red" }}>{error}</p>}
+        <button type="submit">Login</button>
       </form>
     </div>
   );
