@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import PollList from "./components/PollList";
 import PollDetail from "./components/PollDetail";
 import Login from "./components/Login";

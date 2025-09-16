@@ -11,22 +11,44 @@ function PollsList() {
                                             // polls - state variable, starts as an empty array
                                             // setPolls - function to update polls after fetching data
 
+
+    const [loading, setLoading] = useState([true]);                                       
     useEffect(() => { // useEffect runs side effects after render (here it fetches polls from the backend)
-        axios.get(`${API_URL}/polls`)
-        .then(res => setPolls(res.data))
-        .catch(err => console.error(err));
+        
+        const token = localStorage.getItem("token");
+        if(!token) {
+            console.error("No token found, please login first.");
+            setLoading(false);
+            return;
+        }
+        axios.get(`${API_URL}/polls`, {
+            headers: { Authorization: `Bearer ${token}`},
+        })
+        .then((res) => {
+            setPolls(res.data);
+            setLoading(false);
+        })
+        .catch((err) => {
+            console.error("Error fetching polls:", err);
+            setLoading(false);
+        });
     }, []); // Runs once when the component mounts. ([] dependency array ensures it doesn't run again. 
 
+    if (loading) return <p>Loading polls...</p>;
     return (
         <div>
             <h1>Available Polls</h1>
-            <ul>
-                {polls.map(poll => ( // Loops over the polls array with .map()
-                    <li>
-                        <Link to={`/poll/${poll.id}`}>{poll.question}</Link>
-                    </li>
-                ))}
-            </ul>
+            {polls.length === 0 ? (
+                <p>No polls available yet.</p>
+            ) : (
+                <ul>
+                    {polls.map((poll) => (
+                        <li key={poll.id}>
+                            <Link to={`/poll/${poll.id}`}>{poll.question}</Link>
+                        </li>
+                    ))}
+                </ul>
+            )}
         </div>
     );
 }
