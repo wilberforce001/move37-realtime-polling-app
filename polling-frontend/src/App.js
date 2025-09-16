@@ -8,7 +8,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Login />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/polls" element={<PollList />} ></Route>
         <Route path="/polls/:id" element={<PollDetail />} />
       </Routes>

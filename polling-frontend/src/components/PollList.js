@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom"; // Link from react-router-dom, used for client-side navigation between routes
 import axios from "axios"; // axios is used to make HTTP requests to the backend API
+import Logout from "./Logout";
 
 const API_URL = "http://localhost:4000/api"; // API base URL for the backend. All requests will be made relative to this
                                               // (REST API requests go to /api/...)
@@ -38,6 +39,7 @@ function PollsList() {
     return (
         <div>
             <h1>Available Polls</h1>
+            <Logout />
             {polls.length === 0 ? (
                 <p>No polls available yet.</p>
             ) : (
