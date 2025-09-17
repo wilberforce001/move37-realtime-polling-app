@@ -37,6 +37,25 @@ function PollsList() {
         });
     }, []); // Runs once when the component mounts. ([] dependency array ensures it doesn't run again. 
 
+
+        const handleDelete = async (pollId) => {
+        if (!window.confirm("Are you sure you want to delete this poll?")) return;
+
+        try {
+            const token = localStorage.getItem("token");
+            await axios.delete(`${API_URL}/polls/${pollId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+            });
+
+            setPolls(polls.filter((p) => p.id !== pollId)); // update UI
+            alert("Poll deleted successfully!");
+        } catch (err) {
+            console.error("Error deleting poll:", err);
+            alert("Failed to delete poll");
+        }
+        };
+
+
     if (loading) return <p>Loading polls...</p>;
   return (
     <div>
@@ -59,6 +78,12 @@ function PollsList() {
           {polls.map((poll) => (
             <li key={poll.id}>
               <Link to={`/poll/${poll.id}`}>{poll.question}</Link>
+
+              {localStorage.getItem("role") === "ADMIN" && (
+                <button onClick={() => handleDelete(poll.id)}>
+                    Delete
+                </button>
+              )}
             </li>
           ))}
         </ul>

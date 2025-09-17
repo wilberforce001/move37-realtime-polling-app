@@ -70,5 +70,41 @@ router.post("/:id/vote", async (req, res) => {
   }
 });
 
+// DELETE poll by id (only admin)
+router.delete("/:id", isAdmin, async (req, res) => {
+  try {
+    const pollId = Number(req.params.id);
+
+    // Ensure poll exists
+    const poll = await prisma.poll.findUnique({ where: { id: pollId } });
+    if (!poll) return res.status(404).json({ message: "Poll not found" });
+
+    // Optionally restrict to creator only
+    if (poll.creatorId !== req.user.id) {
+      return res.status(403).json({ message: "You can only delete your own polls" });
+    }
+
+    // 1. Delete votes linked to poll options (if you have a Vote model)
+    await prisma.vote.deleteMany({
+      where: { option: { pollId } },
+    });
+
+    // 2. Delete poll options first
+    await prisma.pollOption.deleteMany({
+      where: { pollId },
+    });
+
+    // 3. Delete the poll itself
+    await prisma.poll.delete({
+      where: { id: pollId },
+    });
+
+    res.json({ message: "Poll and its options deleted successfully" });
+  } catch (err) {
+    console.error("Delete poll error:", err);
+    res.status(500).json({ message: "Something went wrong" });
+  }
+});
+
 
 export default router;
