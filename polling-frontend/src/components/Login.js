@@ -20,7 +20,7 @@ function Login() {
 
       // ✅ Save token + user info to localStorage
       localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("role", user.role);
 
       // Redirect to polls page
       navigate("/polls");

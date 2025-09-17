@@ -13,7 +13,9 @@ function PollsList() {
                                             // setPolls - function to update polls after fetching data
 
 
-    const [loading, setLoading] = useState([true]);                                       
+    const [loading, setLoading] = useState([true]);    
+    const role = localStorage.getItem("role");  
+
     useEffect(() => { // useEffect runs side effects after render (here it fetches polls from the backend)
         
         const token = localStorage.getItem("token");
@@ -36,23 +38,33 @@ function PollsList() {
     }, []); // Runs once when the component mounts. ([] dependency array ensures it doesn't run again. 
 
     if (loading) return <p>Loading polls...</p>;
-    return (
+  return (
+    <div>
+      <h1>Available Polls</h1>
+      <Logout />
+
+      {/* Show Create Poll link only for Admins */}
+      {role === "ADMIN" && (
         <div>
-            <h1>Available Polls</h1>
-            <Logout />
-            {polls.length === 0 ? (
-                <p>No polls available yet.</p>
-            ) : (
-                <ul>
-                    {polls.map((poll) => (
-                        <li key={poll.id}>
-                            <Link to={`/poll/${poll.id}`}>{poll.question}</Link>
-                        </li>
-                    ))}
-                </ul>
-            )}
+          <Link to="/create" style={{ fontWeight: "bold", color: "blue" }}>
+            + Create New Poll
+          </Link>
         </div>
-    );
+      )}
+
+      {polls.length === 0 ? (
+        <p>No polls available yet.</p>
+      ) : (
+        <ul>
+          {polls.map((poll) => (
+            <li key={poll.id}>
+              <Link to={`/poll/${poll.id}`}>{poll.question}</Link>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
 }
 
 export default PollsList;

@@ -10,6 +10,11 @@ function PollDetail() {
     const { id } = useParams(); // id - the poll's unique ID from the URL
     const [poll, setPoll] = useState(null); // poll - stores poll details (questions + options)
 
+    const fetchPoll = async () => {
+        const res = await axios.get(`${API_URL}/polls/${id}`);
+        setPoll(res.data);
+    }
+
     useEffect(() => {
         // fetch poll details
         axios.get(`${API_URL}/polls/${id}`)
@@ -39,9 +44,10 @@ function PollDetail() {
     const handleVote = async (optionId) => {
         try {
             await axios.post(`${API_URL}/polls/${id}/vote`, {
-                userId: 1,
+                // userId: 1,
                 optionId
             });
+            fetchPoll();
         } catch (err) {
             console.error(err);
         }
