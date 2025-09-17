@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 
-const API_URL = "http://localhost:4000/api/polls";
+const API_URL = "http://localhost:4000/api";
 
 function CreatePoll() {
   const [question, setQuestion] = useState("");
@@ -28,17 +28,30 @@ function CreatePoll() {
     e.preventDefault();
     try {
       const filteredOptions = options.filter(opt => opt.trim() !== "");
-      const response = await axios.post(API_URL, {
-        question,
-        options: filteredOptions
-      });
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        alert("Not logged in!");
+        return;
+      }
+
+      const response = await axios.post(
+        `${API_URL}/polls`,
+        { question, options: filteredOptions },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
       setMessage("Poll created successfully!");
       setQuestion("");
       setOptions(["", ""]);
       console.log("Created Poll:", response.data);
+
     } catch (error) {
       console.error(error);
       setMessage("Error creating poll");
+      alert("Failed to create poll. Check console for details.");
     }
   };
 
@@ -61,7 +74,7 @@ function CreatePoll() {
         {options.map((opt, idx) => (
           <div key={idx} className="flex gap-2">
             <input
-              type="text"
+              type="text" 
               placeholder={`Option ${idx + 1}`}
               value={opt}
               onChange={(e) => handleOptionChange(idx, e.target.value)}
