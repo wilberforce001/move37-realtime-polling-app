@@ -1,12 +1,10 @@
-import { text } from 'express';
 import prisma from '../prismaClient.js';
 import jwt from "jsonwebtoken";
 
 export async function createPoll(req, res) {
   try {
-
     const token = req.headers.authorization?.split(" ")[1];
-    if (!token) return res.status(401).json({ message: "No token provided"});
+    if (!token) return res.status(401).json({ message: "No token provided" });
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const userId = decoded.id;
@@ -21,15 +19,12 @@ export async function createPoll(req, res) {
       },
       include: {
         options: {
-          include: {
-            _count: { select: { votes: true }}
-          }
+          include: { _count: { select: { votes: true } } }
         },
-        creator: { select: { id: true, name: true, email: true }}
+        creator: { select: { id: true, name: true, email: true } }
       }
     });
 
-    // shape options with vote counts
     const pollWithCounts = {
       id: poll.id,
       question: poll.question,
@@ -57,16 +52,13 @@ export async function getPoll(req, res) {
       where: { id },
       include: {
         options: {
-          include: {
-            _count: { select: { votes: true } }
-          }
+          include: { _count: { select: { votes: true } } }
         },
         creator: { select: { id: true, name: true, email: true } }
       }
     });
     if (!poll) return res.status(404).json({ message: 'Not found' });
 
-    // shape counts cleanly
     poll.options = poll.options.map(o => ({
       id: o.id,
       text: o.text,
@@ -85,19 +77,17 @@ export async function listPolls(req, res) {
     const polls = await prisma.poll.findMany({
       include: {
         options: {
-          include: {
-            _count: { select: { votes: true} }
-          }
+          include: { _count: { select: { votes: true } } }
         },
         creator: { select: { id: true, name: true, email: true } }
       }
     });
 
     const pollWithCounts = polls.map(poll => ({
-      id: poll.id, 
+      id: poll.id,
       question: poll.question,
       isPublished: poll.isPublished,
-      createdAt: poll.createdAt, 
+      createdAt: poll.createdAt,
       updatedAt: poll.updatedAt,
       creator: poll.creator,
       options: poll.options.map(o => ({
@@ -108,45 +98,42 @@ export async function listPolls(req, res) {
     }));
 
     res.json(pollWithCounts);
-  } catch (error) {
+  } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: error.message });
+    return res.status(500).json({ message: err.message });
   }
-};
+}
 
 export async function castVote(req, res) {
   const pollId = Number(req.params.id);
-  const { userId, optionId } = req.body;
+  const { optionId } = req.body;
   const io = req.app.get('io');
 
   try {
+    // 🔐 extract user from token
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) return res.status(401).json({ message: "No token provided" });
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.id;
+
     // validate option belongs to poll
-    const option = await prisma.pollOption.findUnique({ where: { id: Number(optionId) }});
+    const option = await prisma.pollOption.findUnique({ where: { id: Number(optionId) } });
     if (!option || option.pollId !== pollId) {
       return res.status(400).json({ message: 'Option does not belong to poll' });
     }
 
-    // check if user already has a vote for this poll
-    const existing = await prisma.vote.findUnique({
-      where: { userId_pollId: { userId: Number(userId), pollId } }
+    // upsert vote (unique compound key: userId + pollId)
+    await prisma.vote.upsert({
+      where: { userId_pollId: { userId, pollId } },
+      update: { optionId: Number(optionId) },
+      create: {
+        userId,
+        pollId,
+        optionId: Number(optionId)
+      }
     });
 
-    if (existing) {
-      await prisma.vote.update({
-        where: { id: existing.id },
-        data: { optionId: Number(optionId) }
-      });
-    } else {
-      await prisma.vote.create({
-        data: {
-          user: { connect: { id: Number(userId) } },
-          option: { connect: { id: Number(optionId) } },
-          poll: { connect: { id: pollId } }
-        }
-      });
-    }
-
-    // compute latest counts
+    // recompute counts
     const options = await prisma.pollOption.findMany({
       where: { pollId },
       include: { _count: { select: { votes: true } } }

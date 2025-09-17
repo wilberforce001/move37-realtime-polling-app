@@ -25,33 +25,35 @@ export async function registerUser(req, res) {
 // login
 export const loginUser = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    // const { email, password } = req.body;
 
     // find user
-    const user = await prisma.user.findUnique({ where: { email } });
+    const user = await prisma.user.findUnique({ where: { email: req.body.email } });
     if (!user) {
       return res.status(400).json({ error: "Invalid email or password" });
     }
 
     // compare password
-    const isValid = await bcrypt.compare(password, user.passwordHash);
+    const isValid = await bcrypt.compare(req.body.password, user.passwordHash);
     if (!isValid) {
       return res.status(400).json({ error: "Invalid email or password" });
     }
 
     // sign JWT
     const token = jwt.sign(
-      { id: user.id, email: user.email },
-      process.env.JWT_SECRET || "supersecret", // better to set in .env
+      { id: user.id, role: user.role },
+      process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
 
+    // email: user.email
     res.json({
       token,
       user: {
         id: user.id,
         name: user.name,
         email: user.email,
+        role: user.role,
       },
     });
   } catch (err) {
@@ -60,6 +62,31 @@ export const loginUser = async (req, res) => {
   }
 };
 
+export function isAdmin(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).json({ message: "No token provided" });
+  }
+
+  const token = authHeader.split(" ")[1];
+  if (!token) {
+    return res.status(401).json({ message: "Malformed auth header" });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    if (!decoded || decoded.role !== "ADMIN") {
+      return res.status(403).json({ message: "Forbidden: Admins only" });
+    }
+
+    req.user = decoded; // attach full decoded token for downstream use
+    return next();
+  } catch (err) {
+    console.error("JWT verification failed:", err);
+    return res.status(401).json({ message: "Invalid or expired token" });
+  }
+}
 
 export async function getUser(req, res) {
     try {

@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -14,50 +8,63 @@ datasource db {
 }
 
 model User {
-  id           Int     @id @default(autoincrement())
+  id           Int    @id @default(autoincrement())
   name         String
-  email        String  @unique
+  email        String @unique
   passwordHash String
-  polls        Poll[]  @relation("UserPolls")
-  votes        Vote[]
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  role         Role   @default(USER)
+
+  // Relations
+  polls Poll[] @relation("UserPolls")
+  votes Vote[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Poll {
-  id          Int          @id @default(autoincrement())
+  id          Int     @id @default(autoincrement())
   question    String
-  isPublished Boolean      @default(false)
+  isPublished Boolean @default(false)
   creatorId   Int
-  creator     User         @relation(fields: [creatorId], references: [id], name: "UserPolls")
-  options     PollOption[]
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  votes       Vote[]       @relation("PollVotes")
+
+  // Relations
+  creator User         @relation("UserPolls", fields: [creatorId], references: [id])
+  options PollOption[]
+  votes   Vote[]       @relation("PollVotes")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model PollOption {
-  id       Int    @id @default(autoincrement())
-  text     String
-  pollId   Int
-  poll     Poll   @relation(fields: [pollId], references: [id])
-  votes    Vote[]
+  id     Int    @id @default(autoincrement())
+  text   String
+  pollId Int
+
+  // Relations
+  poll  Poll   @relation(fields: [pollId], references: [id])
+  votes Vote[]
 }
 
 model Vote {
-  id        Int       @id @default(autoincrement())
-  userId    Int
-  optionId  Int
-  pollId    Int
-  user      User       @relation(fields: [userId], references: [id])
-  option    PollOption @relation(fields: [optionId], references: [id])
-  poll      Poll       @relation(fields: [pollId], references: [id], name: "PollVotes")
-  createdAt DateTime   @default(now())
+  id       Int  @id @default(autoincrement())
+  userId   Int?
+  optionId Int
+  pollId   Int
 
-  @@unique([userId, pollId]) // ensures 1 vote per user per poll
+  // Relations
+  user   User?      @relation(fields: [userId], references: [id])
+  option PollOption @relation(fields: [optionId], references: [id])
+  poll   Poll       @relation(fields: [pollId], references: [id], name: "PollVotes")
+
+  createdAt DateTime @default(now())
+
+  // Ensures a user can only vote once per poll
+  // @@unique([userId, pollId])
 }
 
-
-// This Prisma schema has been modeled many-to-many via an explicit join table Vote. 
-// This would allow the storage of timestamps, change of votes, enforce constraints
-// A reference to this can be found in; https://github.com/prisma/prisma/discussions/3430?utm_source=chatgpt.com
+enum Role {
+  USER
+  ADMIN
+}

@@ -16,6 +16,8 @@ const io = new Server(server, {
   cors: { origin: '*' }
 });
 
+export { io };
+
 // simple socket rooms for polls
 io.on('connection', (socket) => {
   console.log('socket connected', socket.id);
@@ -32,6 +34,7 @@ io.on('connection', (socket) => {
     console.log('socket disconnected', socket.id);
   });
 });
+
 
 // make io available to route handlers
 app.set('io', io);
