@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 const API_URL = "http://localhost:4000/api";
 
@@ -28,7 +28,7 @@ function Register() {
 
   return (
     <div className="container mt-5" style={{ maxWidth: "400px" }}>
-      <h2>Register</h2>
+      <h2 className="mb-4 text-center">Register</h2>
       <form onSubmit={handleRegister}>
         <div className="mb-3">
           <label className="form-label">Name</label>
@@ -63,10 +63,18 @@ function Register() {
           />
         </div>
 
-        <button type="submit" className="btn btn-primary">
+        <button type="submit" className="btn btn-primary w-100">
           Register
         </button>
       </form>
+
+      {/* Login link */}
+      <div className="text-center mt-3">
+        <p>
+          Already have an account?{" "}
+          <Link to="/">Login here</Link>
+        </p>
+      </div>
     </div>
   );
 }

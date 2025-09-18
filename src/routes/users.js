@@ -3,7 +3,7 @@ const router = Router();
 import { registerUser, getUser, listUsers, loginUser } from '../controllers/userController.js';
 
 // create a user
-router.post('/users', registerUser);
+router.post('/register', registerUser);
 
 // list all users 
 router.get('/', listUsers);
