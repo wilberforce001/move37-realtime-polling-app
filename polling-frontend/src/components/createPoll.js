@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const API_URL = "http://localhost:4000/api";
 
@@ -7,6 +8,7 @@ function CreatePoll() {
   const [question, setQuestion] = useState("");
   const [options, setOptions] = useState(["", ""]); // start with 2 empty options
   const [message, setMessage] = useState("");
+  const navigate = useNavigate();
 
   const handleOptionChange = (index, value) => {
     const newOptions = [...options];
@@ -48,6 +50,9 @@ function CreatePoll() {
       setOptions(["", ""]);
       console.log("Created Poll:", response.data);
 
+      // redirect straight to new poll page
+      navigate("/polls");
+
     } catch (error) {
       console.error(error);
       setMessage("Error creating poll");
@@ -56,36 +61,36 @@ function CreatePoll() {
   };
 
   return (
-    <div className="max-w-md mx-auto p-4 shadow-lg rounded-lg bg-white">
-      <h2 className="text-xl font-bold mb-4">Create a Poll</h2>
-      {message && <p className="mb-2 text-sm text-blue-600">{message}</p>}
-      <form onSubmit={handleSubmit} className="space-y-3">
-        {/* Question */}
-        <input
-          type="text"
-          placeholder="Poll question"
-          value={question}
-          onChange={(e) => setQuestion(e.target.value)}
-          className="w-full border p-2 rounded"
-          required
-        />
+    <div className="container mt-5" style={{ maxWidth: "600px" }}>
+      <h2 className="mb-4 text-center">Create a Poll</h2>
+      {message && <div className="alert alert-info">{message}</div>}
+      <form onSubmit={handleSubmit}>
+        <div className="mb-3">
+          <input
+            type="text"
+            placeholder="Poll question"
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+            className="form-control"
+            required
+          />
+        </div>
 
-        {/* Options */}
         {options.map((opt, idx) => (
-          <div key={idx} className="flex gap-2">
+          <div key={idx} className="input-group mb-2">
             <input
-              type="text" 
+              type="text"
               placeholder={`Option ${idx + 1}`}
               value={opt}
               onChange={(e) => handleOptionChange(idx, e.target.value)}
-              className="flex-1 border p-2 rounded"
+              className="form-control"
               required
             />
             {options.length > 2 && (
               <button
                 type="button"
                 onClick={() => removeOption(idx)}
-                className="text-red-500"
+                className="btn btn-outline-danger"
               >
                 ✕
               </button>
@@ -93,24 +98,20 @@ function CreatePoll() {
           </div>
         ))}
 
-        {/* Add Option */}
         <button
           type="button"
           onClick={addOption}
-          className="px-3 py-1 bg-gray-200 rounded"
+          className="btn btn-secondary mb-3"
         >
           + Add Option
         </button>
-
-        {/* Submit */}
-        <button
-          type="submit"
-          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
-        >
+        <br />
+        <button type="submit" className="btn btn-primary w-100">
           Create Poll
         </button>
       </form>
     </div>
+
   );
 }
 

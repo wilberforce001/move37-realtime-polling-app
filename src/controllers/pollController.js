@@ -46,7 +46,12 @@ export async function createPoll(req, res) {
 }
 
 export async function getPoll(req, res) {
-  const id = Number(req.params.id);
+  console.log("Incoming poll ID:", req.params.id);
+  const id = parseInt(req.params.id, 10);
+
+  if (isNaN(id)) {
+    return res.status(400).json({ message: 'Invalid poll ID' });
+  }
   try {
     const poll = await prisma.poll.findUnique({
       where: { id },

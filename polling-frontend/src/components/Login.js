@@ -31,29 +31,31 @@ function Login() {
   };
 
   return (
-    <div>
-      <h2>Login</h2>
+    <div className="container mt-5" style={{ maxWidth: "400px"}}>
+      <h2 className="mb-4 text-center">Login</h2>
       <form onSubmit={handleLogin}>
-        <div>
-          <label>Email</label>
+        <div className="mb-3">
+          <label className="form-label">Email</label>
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            className="form-control"
           />
         </div>
-        <div>
-          <label>Password</label>
+        <div className="mb-3">
+          <label className="form-label">Password</label>
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            className="form-control"
           />
         </div>
-        {error && <p style={{ color: "red" }}>{error}</p>}
-        <button type="submit">Login</button>
+        {error && <div className="text-danger mb-3">{error}</div>}
+        <button type="submit" className="btn btn-primary w-100">Login</button>
       </form>
     </div>
   );
