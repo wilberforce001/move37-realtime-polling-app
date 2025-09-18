@@ -158,3 +158,65 @@ export async function castVote(req, res) {
     return res.status(500).json({ message: err.message });
   }
 }
+
+export async function updatePoll(req, res) {
+  try {
+    const id = Number(req.params.id);
+    const { question, options, isPublished } = req.body;
+
+    // 1. Check if poll exists
+    const poll = await prisma.poll.findUnique({
+      where: { id },
+      include: { votes: true },
+    });
+
+    if (!poll) {
+      return res.status(404).json({ message: "Poll not found" });
+    }
+
+    // 2. Check if poll already has votes
+    const hasVotes = poll.votes.length > 0;
+
+    let updatedPoll;
+
+    if (hasVotes) {
+      // 🚫 Block option editing, allow only question & isPublished
+      updatedPoll = await prisma.poll.update({
+        where: { id },
+        data: {
+          question,
+          isPublished,
+        },
+        include: {
+          options: true,
+          votes: true,
+          creator: { select: { id: true, name: true, email: true } },
+        },
+      });
+    } else {
+      // ✅ Safe to update question, isPublished, and options
+      updatedPoll = await prisma.poll.update({
+        where: { id },
+        data: {
+          question,
+          isPublished,
+          options: {
+            deleteMany: {}, // clear old options
+            create: options.map((text) => ({ text })),
+          },
+        },
+        include: {
+          options: true,
+          votes: true,
+          creator: { select: { id: true, name: true, email: true } },
+        },
+      });
+    }
+
+    res.json(updatedPoll);
+  } catch (err) {
+    console.error("Error updating poll:", err);
+    res.status(500).json({ message: err.message });
+  }
+}
+

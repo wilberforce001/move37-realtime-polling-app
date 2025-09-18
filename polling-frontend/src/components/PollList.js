@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios"; // axios is used to make HTTP requests to the backend API
 import Logout from "./Logout";
 import PollDetail from "./PollDetail";
+import { useNavigate } from "react-router-dom";
 
 const API_URL = "http://localhost:4000/api"; // API base URL for the backend. All requests will be made relative to this
                                               // (REST API requests go to /api/...)
@@ -15,7 +16,9 @@ function PollsList() {
 
     const [loading, setLoading] = useState([true]);   
     const [selectedPollId, setSelectedPollId] = useState(null);
-    
+    const navigate = useNavigate();
+
+
     const role = localStorage.getItem("role");  
 
     useEffect(() => { // useEffect runs side effects after render (here it fetches polls from the backend)
@@ -89,18 +92,30 @@ function PollsList() {
                 } // Toggle open/close
                 >
                 <div className="d-flex justify-content-between align-items-center">
-                    <span>{poll.question}</span>
-                    {role === "ADMIN" && (
+                <span className="">{poll.question}</span>
+                {role === "ADMIN" && (
+                    <div className="d-flex gap-2">
                     <button
                         onClick={(e) => {
-                        e.stopPropagation(); // prevent toggle when deleting
+                        e.stopPropagation();
+                        setSelectedPollId(poll.id);
+                        navigate(`/edit/${poll.id}`); 
+                        }}
+                        className="btn btn-sm btn-warning"
+                    >
+                        Edit
+                    </button>
+                    <button
+                        onClick={(e) => {
+                        e.stopPropagation();
                         handleDelete(poll.id);
                         }}
                         className="btn btn-sm btn-danger"
                     >
                         Delete
                     </button>
-                    )}
+                    </div>
+                )}
                 </div>
 
                 {/* Expand PollDetail inline if this poll is selected */}

@@ -6,6 +6,7 @@ import Register from "./components/Register";
 import Login from "./components/Login";
 import CreatePoll from "./components/createPoll";
 import 'bootstrap/dist/css/bootstrap.min.css';
+import EditPoll from "./components/EditPoll";
 
 function PollDetailWrapper() {
   const { id } = useParams();
@@ -22,8 +23,8 @@ function App() {
           {role === "ADMIN" && <Route path="/create" element={<CreatePoll />} />}
         <Route path="/register" element={<Register />} />
         <Route path="/polls" element={<PollList />} ></Route>
-        {/* <Route path="/poll/:id" element={<PollDetail />} /> */}
         <Route path="/polls/:id" element={<PollDetailWrapper />} />
+        <Route path="/edit/:id" element={<EditPoll />} />
       </Routes>
     </Router>
   );

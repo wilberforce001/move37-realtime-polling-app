@@ -1,6 +1,6 @@
 import { Router } from 'express';
 const router = Router();
-import { createPoll, getPoll, castVote, listPolls} from '../controllers/pollController.js';
+import { createPoll, getPoll, castVote, listPolls, updatePoll} from '../controllers/pollController.js';
 import prisma from '../prismaClient.js';
 import { io } from '../index.js';
 import { isAdmin } from '../controllers/userController.js';
@@ -9,6 +9,7 @@ import { authenticate } from '../middleware/authMiddleware.js';
 router.post('/', authenticate, isAdmin, createPoll); // create poll + options
 router.get('/', listPolls); // list all polls
 router.get('/:id', getPoll); // get poll with options + counts
+router.put("/:id", updatePoll);
 
 router.post("/:id/vote", async (req, res) => {
   try {
@@ -105,6 +106,5 @@ router.delete("/:id", isAdmin, async (req, res) => {
     res.status(500).json({ message: "Something went wrong" });
   }
 });
-
 
 export default router;
