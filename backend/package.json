@@ -5,7 +5,9 @@
   "description": "This is a backend service for real-time polling application built with **Node.js, Express, PostgresSQL, Prisma, and WebSockets**. This application allows users to create polls, vote on poll options, and receive **live results in real-time**.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node src/index.js",
+    "prisma": "prisma"
   },
   "repository": {
     "type": "git",
@@ -19,7 +21,7 @@
   },
   "homepage": "https://github.com/wilberforce001/move37-realtime-polling-app#readme",
   "dependencies": {
-    "@prisma/client": "^6.16.1",
+    "@prisma/client": "^6.16.2",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.2",
@@ -29,6 +31,6 @@
   },
   "devDependencies": {
     "nodemon": "^3.1.10",
-    "prisma": "^6.16.1"
+    "prisma": "^6.16.2"
   }
 }

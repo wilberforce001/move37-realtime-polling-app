@@ -5,22 +5,34 @@ import jwt from "jsonwebtoken"
 // Register user
 export async function registerUser(req, res) {
     try {
-        const { name, email, password} = req.body;
+        const { name, email, password } = req.body;
 
         // hash the password
         const passwordHash = await bcrypt.hash(password, 10);
 
+        // check how many users exist already
+        const userCount = await prisma.user.count();
+
+        // first user becomes ADMIN, others become USER
+        const role = userCount === 0 ? "ADMIN" : "USER";
+
         // save user in db
         const user = await prisma.user.create({
-            data: { name, email, passwordHash },
+            data: { name, email, passwordHash, role },
         });
 
-        res.status(201).json(user);
+        res.status(201).json({
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+        });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: "Something went wrong" });
     }
 }
+
 
 // login
 export const loginUser = async (req, res) => {

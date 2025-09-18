@@ -33,6 +33,11 @@ function PollsList() {
             headers: { Authorization: `Bearer ${token}`},
         })
         .then((res) => {
+            let allPolls = res.data
+
+            if (role !== "ADMIN") {
+                allPolls = allPolls.filter(p => p.isPublished === true);
+            }
             setPolls(res.data);
             setLoading(false);
         })

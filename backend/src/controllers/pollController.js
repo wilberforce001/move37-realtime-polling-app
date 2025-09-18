@@ -1,4 +1,4 @@
-import prisma from '../prismaClient.js';
+import prisma from '../../src/prismaClient.js';
 import jwt from "jsonwebtoken";
 
 export async function createPoll(req, res) {
