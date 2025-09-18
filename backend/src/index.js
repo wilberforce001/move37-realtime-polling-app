@@ -39,6 +39,11 @@ io.on('connection', (socket) => {
 // make io available to route handlers
 app.set('io', io);
 
+// root route
+app.get("/", (req, res) => {
+  res.send("Backend is running!")
+})
+
 // mount routes
 app.use('/api/users', userRoutes);
 app.use('/api/polls', pollRoutes);
