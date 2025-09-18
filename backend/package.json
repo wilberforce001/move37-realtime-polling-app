@@ -2,11 +2,13 @@
   "type": "module",
   "name": "move37-realtime-polling-app",
   "version": "1.0.0",
-  "description": "This is a backend service for real-time polling application built with **Node.js, Express, PostgresSQL, Prisma, and WebSockets**. This application allows users to create polls, vote on poll options, and receive **live results in real-time**.",
+  "description": "Backend service for a real-time polling application built with Node.js, Express, PostgreSQL, Prisma, and WebSockets.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "prisma generate",
     "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
     "prisma": "prisma"
   },
   "repository": {
