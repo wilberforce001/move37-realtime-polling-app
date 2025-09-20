@@ -47,35 +47,35 @@ function PollDetail({ id }) {
 
   if (!poll) return <div>Loading poll...</div>;
 
-  return (
-    <div className="card mt-3">
-      <div className="card-body">
-        <h5>{poll.question}</h5>
-        <ul className="list-group">
-          {poll.options.map((opt) => (
-            <li
-              key={opt.id}
-              className="list-group-item d-flex justify-content-between align-items-center"
-            >
-              {opt.text}
-              <div>
-                <span className="badge bg-primary me-2">{opt.votes || 0} votes</span>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleVote(opt.id);
-                  }}   
-                  className="btn btn-sm btn-success"
-                >
-                  Vote
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </div>
+return (
+  <div className="card mt-3">
+    <div className="card-body">
+      <h5 className="mb-3">{poll.question}</h5>
+      <ul className="list-group">
+        {poll.options.map((opt) => (
+          <li
+            key={opt.id}
+            className="list-group-item d-flex flex-column flex-sm-row justify-content-between align-items-sm-center"
+          >
+            <span className="mb-2 mb-sm-0">{opt.text}</span>
+            <div className="d-flex align-items-center">
+              <span className="badge bg-primary me-2">{opt.votes || 0} votes</span>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleVote(opt.id);
+                }}
+                className="btn btn-sm btn-success"
+              >
+                Vote
+              </button>
+            </div>
+          </li>
+        ))}
+      </ul>
     </div>
-  );
+  </div>
+);
 }
 
 export default PollDetail;
