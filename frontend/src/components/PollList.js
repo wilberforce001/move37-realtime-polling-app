@@ -4,7 +4,7 @@ import Logout from "./Logout";
 import PollDetail from "./PollDetail";
 import { useNavigate } from "react-router-dom";
 
-const API_URL = "http://localhost:4000/api"; // API base URL for the backend. All requests will be made relative to this
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:4000/api"; // API base URL for the backend. All requests will be made relative to this
                                               // (REST API requests go to /api/...)
 
 function PollsList() {

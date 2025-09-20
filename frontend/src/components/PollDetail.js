@@ -2,8 +2,12 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { io } from "socket.io-client";
 
-const API_URL = "http://localhost:4000/api";
-const socket = io("http://localhost:4000");
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:4000/api";
+const SOCKET_URL = API_URL.replace("/api", "");
+
+const socket = io(SOCKET_URL, {
+  transports: ["websocket"],
+});
 
 function PollDetail({ id }) {
   const [poll, setPoll] = useState(null);

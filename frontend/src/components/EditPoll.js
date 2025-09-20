@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 
-const API_URL = "http://localhost:4000/api";
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:4000/api";
 
 function EditPoll() {
   const { id } = useParams();
