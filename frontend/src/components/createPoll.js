@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
+import api from "../api.js"
 import { useNavigate } from "react-router-dom";
 
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:4000/api";
@@ -37,8 +37,8 @@ function CreatePoll() {
         return;
       }
 
-      const response = await axios.post(
-        `${API_URL}/polls`,
+      const response = await api.post(
+        "/polls",
         { question, options: filteredOptions },
         {
           headers: { Authorization: `Bearer ${token}` }
