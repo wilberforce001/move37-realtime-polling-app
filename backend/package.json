@@ -9,7 +9,9 @@
     "build": "prisma generate",
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-    "prisma": "prisma"
+    "prisma": "prisma",
+    "postinstall": "prisma generate",
+    "postdeploy": "prisma migrate deploy"
   },
   "repository": {
     "type": "git",
