@@ -167,56 +167,84 @@ export async function updatePoll(req, res) {
     // 1. Check if poll exists
     const poll = await prisma.poll.findUnique({
       where: { id },
-      include: { votes: true },
+      include: { votes: true, options: true },
     });
 
     if (!poll) {
       return res.status(404).json({ message: "Poll not found" });
     }
 
-    // 2. Check if poll already has votes
+    // 2. If poll already has votes, lock options
     const hasVotes = poll.votes.length > 0;
-
-    let updatedPoll;
-
     if (hasVotes) {
-      // 🚫 Block option editing, allow only question & isPublished
-      updatedPoll = await prisma.poll.update({
+      const updatedPoll = await prisma.poll.update({
         where: { id },
-        data: {
-          question,
-          isPublished,
-        },
+        data: { question, isPublished },
         include: {
-          options: true,
+          options: {
+            include: { _count: { select: { votes: true } } }
+          },
           votes: true,
           creator: { select: { id: true, name: true, email: true } },
         },
       });
-    } else {
-      // ✅ Safe to update question, isPublished, and options
-      updatedPoll = await prisma.poll.update({
-        where: { id },
-        data: {
-          question,
-          isPublished,
-          options: {
-            deleteMany: {}, // clear old options
-            create: options.map((text) => ({ text })),
-          },
-        },
-        include: {
-          options: true,
-          votes: true,
-          creator: { select: { id: true, name: true, email: true } },
-        },
+      return res.json(updatedPoll);
+    }
+
+    // ✅ Safe to edit question + options
+    const existingOptions = poll.options;
+
+    // --- Update existing options ---
+    for (const opt of options) {
+      if (opt.id) {
+        await prisma.pollOption.update({
+          where: { id: opt.id },
+          data: { text: opt.text },
+        });
+      }
+    }
+
+    // --- Remove deleted options ---
+    const removedIds = existingOptions
+      .filter((o) => !options.some((opt) => opt.id === o.id))
+      .map((o) => o.id);
+
+    if (removedIds.length > 0) {
+      await prisma.pollOption.deleteMany({
+        where: { id: { in: removedIds } },
       });
     }
 
-    res.json(updatedPoll);
+    // --- Add new options ---
+    const newOptions = options.filter((opt) => !opt.id);
+    for (const opt of newOptions) {
+      await prisma.pollOption.create({
+        data: { text: opt.text, pollId: id },
+      });
+    }
+
+    // 🔄 Refetch updated poll with counts
+    const updatedPoll = await prisma.poll.findUnique({
+      where: { id },
+      include: {
+        options: {
+          include: { _count: { select: { votes: true } } }
+        },
+        votes: true,
+        creator: { select: { id: true, name: true, email: true } },
+      },
+    });
+
+    // normalize like getPoll
+    updatedPoll.options = updatedPoll.options.map(o => ({
+      id: o.id,
+      text: o.text,
+      votes: o._count.votes
+    }));
+
+    return res.json(updatedPoll);
   } catch (err) {
     console.error("Error updating poll:", err);
     res.status(500).json({ message: err.message });
   }
 }
-

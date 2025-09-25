@@ -7,7 +7,7 @@ const API_URL = process.env.REACT_APP_API_URL || "http://localhost:4000/api";
 function EditPoll() {
   const { id } = useParams();
   const [question, setQuestion] = useState("");
-  const [options, setOptions] = useState([""]);
+  const [options, setOptions] = useState([]);
   const [isPublished, setIsPublished] = useState(false);
   const navigate = useNavigate();
 
@@ -18,9 +18,14 @@ function EditPoll() {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => {
-        setQuestion(res.data.question);
-        setOptions(res.data.options.map((o) => o.text));
-        setIsPublished(res.data.isPublished);
+        setQuestion(res.data.question || "");
+        setOptions(
+          (res.data.options || []).map((o) => ({
+            id: o.id,
+            text: o.text || "",
+          }))
+        );
+        setIsPublished(res.data.isPublished || false);
       })
       .catch((err) => console.error(err));
   }, [id]);
@@ -30,16 +35,38 @@ function EditPoll() {
     const token = localStorage.getItem("token");
 
     try {
-      await axios.put(
-        `${API_URL}/polls/${id}`,
-        { question, options, isPublished },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+    await axios.put(
+      `${API_URL}/polls/${id}`,
+      {
+        question,
+        options: options
+          .filter((o) => o.text.trim() !== "")
+          .map((o) => ({
+            id: o.id || undefined, // keep id for existing, undefined for new
+            text: o.text,
+          })),
+        isPublished,
+      },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
       alert("Poll updated successfully!");
       navigate("/polls");
     } catch (err) {
       console.error("Error updating poll:", err);
       alert("Failed to update poll");
+    }
+  };
+
+  const addOption = () => {
+    setOptions([...options, { id: null, text: "" }]);
+  };
+
+  const removeOption = (index) => {
+    if (options.length > 2) {
+      setOptions(options.filter((_, i) => i !== index));
+    } else {
+      alert("Poll must have at least 2 options.");
     }
   };
 
@@ -59,24 +86,41 @@ function EditPoll() {
         </div>
 
         {options.map((opt, i) => (
-          <div className="mb-3" key={i}>
-            <label className="form-label">Option {i + 1}</label>
+          <div className="input-group mb-3" key={opt.id || i}>
             <input
               type="text"
               className="form-control"
-              value={opt}
+              placeholder={`Option ${i + 1}`}
+              value={opt.text || ""} // ensure controlled input
               onChange={(e) => {
                 const newOptions = [...options];
-                newOptions[i] = e.target.value;
+                newOptions[i] = { ...opt, text: e.target.value };
                 setOptions(newOptions);
               }}
               required
             />
+            {options.length > 2 && (
+              <button
+                type="button"
+                className="btn btn-outline-danger"
+                onClick={() => removeOption(i)}
+              >
+                ✕
+              </button>
+            )}
           </div>
         ))}
 
+        <button
+          type="button"
+          onClick={addOption}
+          className="btn btn-secondary mb-3"
+        >
+          + Add Option
+        </button>
+
         <div className="mb-3">
-          <label className="form-label">Published</label>
+          <label className="form-label me-2">Published</label>
           <input
             type="checkbox"
             checked={isPublished}
