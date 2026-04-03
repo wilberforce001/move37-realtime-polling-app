@@ -115,7 +115,7 @@ export async function castVote(req, res) {
   const io = req.app.get('io');
 
   try {
-    // 🔐 extract user from token
+    // extract user from token
     const token = req.headers.authorization?.split(" ")[1];
     if (!token) return res.status(401).json({ message: "No token provided" });
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -191,7 +191,7 @@ export async function updatePoll(req, res) {
       return res.json(updatedPoll);
     }
 
-    // ✅ Safe to edit question + options
+    // Safe to edit question + options
     const existingOptions = poll.options;
 
     // --- Update existing options ---
@@ -223,7 +223,7 @@ export async function updatePoll(req, res) {
       });
     }
 
-    // 🔄 Refetch updated poll with counts
+    // Refetch updated poll with counts
     const updatedPoll = await prisma.poll.findUnique({
       where: { id },
       include: {

@@ -60,7 +60,7 @@ cd move37-realtime-polling-app
 
 ### WebSockets
 - Client can connect via WebSocket to receive **live updates**
-- When a vote is cast, all connected clients viewing that poll receive the uodated results instantly. 
+- When a vote is cast, all connected clients viewing that poll receive the updated results instantly. 
 
 ## Evaluation Focus
 - Database Schema design (Prisma with correct relationships)
