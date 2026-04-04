@@ -1,32 +1,42 @@
 import bcrypt from 'bcrypt';
 import prisma from '../prismaClient.js';
 import jwt from "jsonwebtoken"
+import { error } from 'console';
 
 // Register user
 export async function registerUser(req, res) {
     try {
-        const { firstName, secondName, email, password } = req.body;
+        const { name, email, password } = req.body;
 
-        if (!firstName || !secondName || !email || !password) {
-          return res.status(400).json({ error: "All fields are required"});
+        // validation
+        if (!name || !email || !password) {
+            return res.status(400).json({ error: "All fields are required" });
         }
 
-        // hash the password
+        const existingUser = await prisma.user.findUnique({
+          where: { email },
+        });
+
+        if (existingUser) {
+          return res.status(400).json({ error: "User already exists"});
+        }
+
+        // hash password
         const passwordHash = await bcrypt.hash(password, 10);
 
-        // check how many users exist already
+        // check user count
         const userCount = await prisma.user.count();
 
-        // first user becomes ADMIN, others become USER
+        // role logic
         const role = userCount === 0 ? "ADMIN" : "USER";
 
-        // save user in db
+        // create user
         const user = await prisma.user.create({
-            data: { 
-              name: `${firstName} ${secondName}`,
-              email,
-              passwordHash,
-              role,
+            data: {
+                name,
+                email,
+                passwordHash,
+                role,
             },
         });
 
@@ -36,12 +46,13 @@ export async function registerUser(req, res) {
             email: user.email,
             role: user.role,
         });
+
     } catch (err) {
-        console.error("REGISTER ERROR:", err);
-        res.status(500).json({ error: err.message });
+        console.error(err);
+        res.status(500).json({ error: err.message
+        });
     }
 }
-
 
 // login user
 export const loginUser = async (req, res) => {

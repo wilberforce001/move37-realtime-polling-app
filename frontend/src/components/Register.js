@@ -21,8 +21,9 @@ function Register() {
       alert("Registration successful! Please login.");
       navigate("/login");
     } catch (err) {
-      console.error("Error registering:", err);
-      alert("Failed to register. Try again.");
+      console.error("FULL ERROR:", err);
+      console.error("SERVER ERROR:", err.response?.data)
+      alert(err.response?.data?.error || "Failed to register");
     }
   };
 
