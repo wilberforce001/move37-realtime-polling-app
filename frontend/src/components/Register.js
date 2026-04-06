@@ -81,3 +81,7 @@ function Register() {
 }
 
 export default Register;
+
+
+// postgresql://polling_db_kzqw_user:nM4loJTAtICcf1cAmtD5jwiDwfE2orcI@dpg-d37728umcj7s73fenrsg-a/polling_db_kzqw; 
+// postgresql://health_claims_fraud_user:AOMDiwvjvCwIhRLsAn9XKfwUm1uZ57pG@dpg-d6mbs5tactks73fvn0ng-a/health_claims_fraud
